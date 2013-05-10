@@ -1,3 +1,5 @@
+require 'bundler/capistrano'
+
 set :application, "traffic_light_pi_server"
 set :repository,  "git@github.com:nledez/traffic_light_pi_server_example.git"
 
