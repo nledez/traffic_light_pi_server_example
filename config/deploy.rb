@@ -13,6 +13,9 @@ set(:run_method) { use_sudo ? :sudo : :run }
 # This is needed to correctly handle sudo password prompt
 default_run_options[:pty] = true
 
+set :bundle_flags, "--quiet"
+set :normalize_asset_timestamps, false
+
 set :user, "root"
 set :group, user
 set :runner, user

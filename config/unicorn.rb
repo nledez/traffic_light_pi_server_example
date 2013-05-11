@@ -8,7 +8,8 @@ err_log = "#{rails_root}/log/unicorn_error.log"
 
 timeout 30
 worker_processes 1 # increase or decrease
-listen socket_file, :backlog => 1024
+working_directory rails_root
+listen socket_file
 
 pid pid_file
 stderr_path err_log
