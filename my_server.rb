@@ -1,6 +1,7 @@
 require 'traffic_light_pi_server'
 
-class TrafficLightPiServer < Sinatra::Base
+#class TrafficLightPiServer < Sinatra::Base
+class TrafficLightPiServer
   configure do
     @@line_map = {
       :gauche => {

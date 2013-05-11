@@ -1,4 +1,4 @@
-require 'traffic_light_pi_server'
+require 'my_server'
 
 use Rack::ShowExceptions
 
