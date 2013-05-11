@@ -77,14 +77,7 @@ namespace :deploy do
 
   desc "restart the app"
   task :restart, :roles => :web do
-    if update_db?
-      run "#{sudo} monit stop #{application}"
-      run "cd #{current_release} && bundle exec rake db:migrate"
-      run "cd #{current_release} && bundle exec rake db:seed"
-      run "#{sudo} monit start #{application}"
-    else
-      run "#{sudo} monit restart #{application}"
-    end
+    run "#{sudo} monit restart #{application}"
   end
 
 end
