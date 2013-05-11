@@ -1,4 +1,4 @@
-require 'my_server'
+require './my_server.rb'
 
 use Rack::ShowExceptions
 

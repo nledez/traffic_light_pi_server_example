@@ -2,7 +2,6 @@ require 'bundler/capistrano'
 
 set :application, "traffic_light_pi_server"
 set :repository,  "git@github.com:nledez/traffic_light_pi_server_example.git"
-
 set :scm, :git # You can set :scm explicitly or Capistrano will make an intelligent guess based on known version control directory names
 # Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
 
@@ -28,29 +27,79 @@ set :unicorn_conf, "#{deploy_to}/current/config/unicorn.rb"
 set :unicorn_pid, "#{deploy_to}/shared/pids/unicorn.pid"
 
 # Unicorn control tasks
+#namespace :deploy do
+#  task :restart do
+#    run "if [ -f #{unicorn_pid} ]; then kill -USR2 `cat #{unicorn_pid}`; else cd #{deploy_to}/current && bundle exec unicorn -c #{unicorn_conf} -E #{rails_env} -D; fi"
+#  end
+#  task :start do
+#    run "cd #{deploy_to}/current && bundle exec unicorn -c #{unicorn_conf} -E #{rails_env} -D"
+#  end
+#  task :stop do
+#    run "if [ -f #{unicorn_pid} ]; then kill -QUIT `cat #{unicorn_pid}`; fi"
+#  end
+#end
+
+################################################################################
+# TASKS
+#
+
 namespace :deploy do
-  task :restart do
-    run "if [ -f #{unicorn_pid} ]; then kill -USR2 `cat #{unicorn_pid}`; else cd #{deploy_to}/current && bundle exec unicorn -c #{unicorn_conf} -E #{rails_env} -D; fi"
+
+  desc "applies the monit config symlink on the web machines"
+  task :monit_symlink, :roles => :web do
+    run "#{sudo} ln -nfs #{release_path}/config/monit.conf /etc/monit/conf.d/#{application}.conf"
   end
-  task :start do
-    run "cd #{deploy_to}/current && bundle exec unicorn -c #{unicorn_conf} -E #{rails_env} -D"
+
+  desc "reloads monit config"
+  task :monit_reload do
+    run "#{sudo} monit reload"
   end
-  task :stop do
-    run "if [ -f #{unicorn_pid} ]; then kill -QUIT `cat #{unicorn_pid}`; fi"
+
+  desc "applies the nginx config symlink"
+  task :nginx_symlink, :roles => :web do
+    run "#{sudo} ln -nfs #{release_path}/config/nginx.conf /etc/nginx/sites-enabled/#{application}"
   end
+
+  desc "reloads nginx config"
+  task :nginx_reload, :roles => :web do
+    run "#{sudo} /etc/init.d/nginx reload"
+  end
+
+  desc "start the app"
+  task :start, :roles => :web do
+    run "#{sudo} monit start #{application}"
+  end
+
+  desc "stop the app"
+  task :stop, :roles => :web do
+    run "#{sudo} monit stop #{application}"
+  end
+
+  desc "restart the app"
+  task :restart, :roles => :web do
+    if update_db?
+      run "#{sudo} monit stop #{application}"
+      run "cd #{current_release} && bundle exec rake db:migrate"
+      run "cd #{current_release} && bundle exec rake db:seed"
+      run "#{sudo} monit start #{application}"
+    else
+      run "#{sudo} monit restart #{application}"
+    end
+  end
+
 end
 
-# if you want to clean up old releases on each deploy uncomment this:
-# after "deploy:restart", "deploy:cleanup"
+################################################################################
+# CALLBACKS
+#
 
-# if you're still using the script/reaper helper you will need
-# these http://github.com/rails/irs_process_scripts
+after "deploy:finalize_update",
+  "deploy:monit_symlink",
+  "deploy:nginx_symlink"
 
-# If you are using Passenger mod_rails uncomment this:
-# namespace :deploy do
-#   task :start do ; end
-#   task :stop do ; end
-#   task :restart, :roles => :app, :except => { :no_release => true } do
-#     run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
-#   end
-# end
+before "deploy:restart",
+  "deploy:monit_reload",
+  "deploy:nginx_reload"
+
+after "deploy:restart",
+  "deploy:cleanup" # keep the last 5 releases
