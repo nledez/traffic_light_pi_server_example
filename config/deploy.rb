@@ -47,37 +47,37 @@ namespace :deploy do
 
   desc "applies the monit config symlink on the web machines"
   task :monit_symlink, :roles => :web do
-    run "#{sudo} ln -nfs #{release_path}/config/monit.conf /etc/monit/conf.d/#{application}.conf"
+    run "ln -nfs #{release_path}/config/monit.conf /etc/monit/conf.d/#{application}.conf"
   end
 
   desc "reloads monit config"
   task :monit_reload do
-    run "#{sudo} monit reload"
+    run "monit reload"
   end
 
   desc "applies the nginx config symlink"
   task :nginx_symlink, :roles => :web do
-    run "#{sudo} ln -nfs #{release_path}/config/nginx.conf /etc/nginx/sites-enabled/#{application}"
+    run "ln -nfs #{release_path}/config/nginx.conf /etc/nginx/sites-enabled/#{application}"
   end
 
   desc "reloads nginx config"
   task :nginx_reload, :roles => :web do
-    run "#{sudo} /etc/init.d/nginx reload"
+    run "/etc/init.d/nginx reload"
   end
 
   desc "start the app"
   task :start, :roles => :web do
-    run "#{sudo} monit start #{application}"
+    run "monit start #{application}"
   end
 
   desc "stop the app"
   task :stop, :roles => :web do
-    run "#{sudo} monit stop #{application}"
+    run "monit stop #{application}"
   end
 
   desc "restart the app"
   task :restart, :roles => :web do
-    run "#{sudo} monit restart #{application}"
+    run "monit restart #{application}"
   end
 
 end
