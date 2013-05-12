@@ -3,7 +3,7 @@ require 'bundler/capistrano'
 set :application, "traffic_light_pi_server"
 set :repository,  "git@github.com:nledez/traffic_light_pi_server_example.git"
 set :scm, :git # You can set :scm explicitly or Capistrano will make an intelligent guess based on known version control directory names
-# Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
+set :deploy_via, :remote_cache
 
 # do not use sudo
 set :use_sudo, false
